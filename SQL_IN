@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SQL IN Formatter</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+    textarea, pre { width: 100%; min-height: 200px; margin-top: 10px; padding: 10px; font-family: monospace; }
+    .controls { margin: 10px 0; }
+    button { margin-right: 10px; padding: 6px 12px; cursor: pointer; }
+    pre { background: #f8f8f8; border: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+  <h1>SQL IN Formatter</h1>
+  <p>Paste values below and get SQL-friendly output for a WHERE IN clause.</p>
+
+  <textarea id="input" placeholder="Paste values here..."></textarea>
+
+  <div class="controls">
+    <label><input type="radio" name="quote" value="single" checked> Single quotes</label>
+    <label><input type="radio" name="quote" value="double"> Double quotes</label>
+    <label><input type="radio" name="quote" value="none"> No quotes</label>
+    <br>
+    <label><input type="checkbox" id="multiline" checked> Multiline</label>
+    <label><input type="checkbox" id="dedupe"> Remove duplicates</label>
+  </div>
+
+  <button onclick="formatValues()">Format</button>
+  <button onclick="copyOutput()">Copy to Clipboard</button>
+
+  <h3>Output (<span id="count">0</span> values):</h3>
+  <pre id="output"></pre>
+
+  <script>
+    function formatValues() {
+      const raw = document.getElementById("input").value;
+      const lines = raw.split(/\r?\n/).map(v => v.trim()).filter(v => v);
+
+      const dedupe = document.getElementById("dedupe").checked;
+      let values = dedupe ? [...new Set(lines)] : lines;
+
+      const quoteChoice = document.querySelector('input[name="quote"]:checked').value;
+      values = values.map(v => {
+        if (quoteChoice === "single") return `'${v}'`;
+        if (quoteChoice === "double") return `"${v}"`;
+        return v;
+      });
+
+      const multiline = document.getElementById("multiline").checked;
+      const formatted = multiline ? values.join(",\n") : values.join(", ");
+
+      document.getElementById("output").textContent = formatted;
+      document.getElementById("count").textContent = values.length;
+    }
+
+    function copyOutput() {
+      const output = document.getElementById("output").textContent;
+      navigator.clipboard.writeText(output).then(() => {
+        alert("Copied to clipboard!");
+      });
+    }
+  </script>
+</body>
+</html>
